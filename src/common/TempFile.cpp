@@ -3,13 +3,14 @@
 #include "TempFile.hpp"
 
 #include <iostream>
+#include <string>
 
 namespace swutils
 {
 namespace common
 {
 
-TempFile::TempFile(std::string_view filePath) :
+TempFile::TempFile(const std::string& filePath)
 {
     std::cout << "TempFile(" << filePath << ")" << std::endl;
 }

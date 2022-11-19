@@ -87,14 +87,14 @@ function(setup_unittest_executable UT_EXEC_NAME)
     set_target_properties(${UT_EXEC_NAME}
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/unitTests/${UT_EXEC_NAME}
-        COMPILE_FLAGS "${UT_COMPILER_OPTIONS} ${UNITTEST_OPTIMIZATION} ${COMMON_COMPILER_WARNINGS}"
+        COMPILE_FLAGS "${UT_COMPILER_OPTIONS} ${COMMON_COMPILER_WARNINGS}"
     )
        
     setup_common_target_properties(${UT_EXEC_NAME}
         "Run unittests for ${UT_EXEC_NAME}"
-        libgtest
-        libgmock
-        libgtest_main
+        gtest
+        gmock
+        gtest_main
         ${arg_LIBS}
     )
 

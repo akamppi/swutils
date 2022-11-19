@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include <string>
+
 namespace swutils
 {
 namespace common
 {
-
-#include <string_view>
 
 /** @brief Create scoped temporary file to read/write
  *
@@ -18,7 +18,7 @@ class TempFile
 public:
     /// @brief ctor
     /// @param filePath 
-    explicit TempFile(std::string_view filePath);
+    explicit TempFile(const std::string& filePath);
 
     /// dtor
     ~TempFile();

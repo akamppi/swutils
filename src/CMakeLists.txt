@@ -7,14 +7,6 @@ project(swutils
     HOMEPAGE_URL "https://github.com/akamppi/swutils"
 )
 
-# Configure the URL where googletest library can be downloaded from
-set(GOOGLETEST_URL "https://github.com/google/googletest/archive/refs/heads/main.zip" CACHE STRING "URL of Googletest library")
-
-# *************************************************************************************************
-# Load pkg-config support
-
-find_package(PkgConfig)
-
 # *************************************************************************************************
 # Include cmake modules 
 
@@ -22,57 +14,58 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../CMakeModules)
 include(googletest_build)
 include(print_properties)
 include(create_targets)
+include(GoogleTest)
 
 # *************************************************************************************************
 # Compilation options
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-string(CONCAT UT_COMPILER_OPTIONS
-   "-g "
-)
+# GCC specific compilation flags
+if(CMAKE_COMPILER_IS_GNUCXX)
+    string(CONCAT UT_COMPILER_OPTIONS
+    "-g "
+    )
 
-string(CONCAT COMMON_COMPILER_WARNINGS
-    "-Wall "
-    "-Wextra "
-    "-Werror "
-    "-Wshadow "
-    "-W "
-    "-Wpedantic "
-    "-Wmissing-declarations "
-    "-Wuninitialized "
-    "-Woverloaded-virtual "
-    "-Werror-implicit-function-declaration "
-    "-Wformat "
-    "-Wunknown-pragmas "
-    "-Wstrict-aliasing "
-    "-Wcast-qual "
-    "-Wcast-align "
-    "-Wlogical-op "
-    "-Wredundant-decls "
-    "-Wdisabled-optimization "
-)
+    string(CONCAT COMMON_COMPILER_WARNINGS
+        "-Wall "
+        "-Wextra "
+        "-Werror "
+        "-Wshadow "
+        "-W "
+        "-Wpedantic "
+        "-Wmissing-declarations "
+        "-Wuninitialized "
+        "-Woverloaded-virtual "
+        "-Werror-implicit-function-declaration "
+        "-Wformat "
+        "-Wunknown-pragmas "
+        "-Wstrict-aliasing "
+        "-Wcast-qual "
+        "-Wcast-align "
+        "-Wlogical-op "
+        "-Wredundant-decls "
+        "-Wdisabled-optimization "
+    )
 
-string(CONCAT STRICT_COMPILER_WARNINGS
-    "${COMMON_COMPILER_WARNINGS}"
-    "-Weffc++ "
-    "-Wundef "
-    "-Wsuggest-attribute=const "
-    "-Wsuggest-override "
-    "-Wfloat-equal "
-    "-Wuseless-cast "
-    "-Wconversion "
-)
-
-set(UNITTEST_OPTIMIZATION
-    " -Og "
-)
+    string(CONCAT STRICT_COMPILER_WARNINGS
+        "${COMMON_COMPILER_WARNINGS}"
+        "-Weffc++ "
+        "-Wundef "
+        "-Wsuggest-attribute=const "
+        "-Wsuggest-override "
+        "-Wfloat-equal "
+        "-Wuseless-cast "
+        "-Wconversion "
+    )
+endif()
 
 # *************************************************************************************************
 # Include other makefiles and their contents (targets and sources etc.)
 
 add_subdirectory(common)
+#gtest_discover_tests(common)
 #include(common/Logger/CMakeLists.txt)
 #include(common/Logger/unitTests/CMakeLists.txt)
 #include(common/SimpleZmq/CMakeLists.txt)
