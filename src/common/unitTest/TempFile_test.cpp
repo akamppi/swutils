@@ -1,6 +1,6 @@
 // Copyright 2022 Antti Kamppi
 
-#include "../TempFile.hpp"
+#include <TempFile.hpp>
 
 #include <gtest/gtest.h>
 

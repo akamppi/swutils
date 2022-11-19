@@ -59,6 +59,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         "-Wuseless-cast "
         "-Wconversion "
     )
+else() # MSBuild assumed for now
+    string(CONCAT COMMON_COMPILER_WARNINGS
+        "/Wall "
+        "/WX "
+    )
 endif()
 
 # *************************************************************************************************

@@ -12,17 +12,23 @@ set_property(GLOBAL APPEND
 # Setup target properties which are common for executables and unit tests
 # 
 # Also creates a custom target to run the created target
-# Usage: setup_common_target_properties(<target name> <comment for runner> [link library1] [link library2]...)
+# Usage: setup_common_target_properties(<target name> <comment for runner> 
+# LIBS - List of libraries to link against
+# )
 function(setup_common_target_properties TARGET_NAME RUNNER_COMMENT)
-    target_include_directories(${TARGET_NAME}
-        PUBLIC
-        ${PROJECT_SOURCE_DIR}
-    )
+    set(_multiValArgs LIBS)
+    cmake_parse_arguments("arg" "" "" "${_multiValArgs}" ${ARGN})
+
+    # sanitize input arguments
+    if (NOT arg_LIBS)
+        unset(arg_LIBS)
+    endif()
 
     target_link_libraries(${TARGET_NAME}
-        PUBLIC ${ARGN}
+        ${arg_LIBS}
     )
 
+    # Create a custom target to run the given executable
     set(_target_runner run-${TARGET_NAME})
     add_custom_target(${_target_runner}
         COMMAND $<TARGET_FILE:${TARGET_NAME}>
@@ -30,6 +36,7 @@ function(setup_common_target_properties TARGET_NAME RUNNER_COMMENT)
         COMMENT "${RUNNER_COMMENT}" VERBATIM
     )
 
+    # Document the target and its libraries so it can be printed as part of cmake configuration task
     set_property(GLOBAL APPEND 
         PROPERTY ALL_TARGET_NAMES
         ${TARGET_NAME}
@@ -66,36 +73,54 @@ function(setup_library LIBRARY_NAME)
     )
 endfunction(setup_library)
 
-# Create an executable unit test suite
+# Create an executable unit test executable which uses googletest
 #
-# The unit test exectable is linked against libraries given as parameters
-# Note: gtest-related libraries are included implicitly and do not need to be listed
+# The unit test exectable is created with given arguments
+# Note: gtest-related libraries, including gmock, are included implicitly and do not need to be listed
 #
-# Usage: setup_unittest_executable(<unit test name> [lib1] [lib2])
+# Usage: setup_unittest_executable(<unit test name>
+# SOURCES - List source files that are to be tested
+# TEST_SOURCES - List source files that contain actual test suites/test cases
+# LIBS - Libraries to link against (gtest, gmock, gtest-main not needed)
+# INCLUDE_DIRS - List of include directories for the test executable
+#)
 function(setup_unittest_executable UT_EXEC_NAME)
     # parse function arguments
-    set(_multiValArgs SOURCES LIBS)
+    set(_multiValArgs SOURCES TEST_SOURCES LIBS INCLUDE_DIRS)
     cmake_parse_arguments("arg" "" "" "${_multiValArgs}" ${ARGN})
 
+    # sanitize input arguments
     if (NOT arg_SOURCES)
         unset(arg_SOURCES)
+    endif()
+    if (NOT arg_TEST_SOURCES)
+        unset(arg_TEST_SOURCES)
     endif()
 
     add_executable(${UT_EXEC_NAME}
         ${arg_SOURCES}
+        ${arg_TEST_SOURCES}
     )
+
     set_target_properties(${UT_EXEC_NAME}
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/unitTests/${UT_EXEC_NAME}
         COMPILE_FLAGS "${UT_COMPILER_OPTIONS} ${COMMON_COMPILER_WARNINGS}"
     )
+
+    target_include_directories(${UT_EXEC_NAME}
+        PRIVATE
+            ${arg_INCLUDE_DIRS}
+    )
        
     setup_common_target_properties(${UT_EXEC_NAME}
         "Run unittests for ${UT_EXEC_NAME}"
-        gtest
-        gmock
-        gtest_main
-        ${arg_LIBS}
+        LIBS
+            PRIVATE
+                gtest
+                gmock
+                gtest_main
+                ${arg_LIBS}
     )
 
     set_property(GLOBAL APPEND
@@ -115,11 +140,24 @@ endfunction(setup_unittest_executables)
 
 # Create a single executable with name <EXEC_NAME>
 # 
-# The executable is linked against libraries given as extra parameters.
-# Usage: setup_executable(<exec-name> [lib1] [lib2]...)
+# Usage: setup_executable(<exec-name>
+# SOURCES - List of sources for the executable
+# LIBS - List of libraries to link against
+# )
 function(setup_executable EXEC_NAME)
-    add_executable(${EXEC_NAME} 
-        ""
+    set(_multiValArgs SOURCES LIBS)
+    cmake_parse_arguments("arg" "" "" "${_multiValArgs}" ${ARGN})
+
+    # sanitize input arguments
+    if (NOT arg_SOURCES)
+        unset(arg_SOURCES)
+    endif()
+    if (NOT arg_LIBS)
+        unset(arg_LIBS)
+    endif()
+    
+    add_executable(${EXEC_NAME}
+        arg_SOURCES
     )
     set_target_properties(${EXEC_NAME}
         PROPERTIES
@@ -127,7 +165,10 @@ function(setup_executable EXEC_NAME)
         COMPILE_FLAGS "${STRICT_COMPILER_WARNINGS}"
     )
     
-    setup_common_target_properties(${EXEC_NAME} "Run executable for ${EXEC_NAME}" ${ARGN})
+    setup_common_target_properties(${EXEC_NAME} "Run executable for ${EXEC_NAME}" 
+        LIBS
+            ${arg_LIBS}
+    )
 endfunction(setup_executable)
 
 # Set up a group of executables with names given in a list as first argument
